@@ -8,6 +8,10 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 tinkoff-investments = "^0.2.0b66"
+rfeed = "^1.1.1"
+fastapi = "^0.109.2"
+punq = "^0.7.0"
+uvicorn = "^0.27.1"
 
 
 [build-system]
