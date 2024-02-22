@@ -15,5 +15,5 @@ class RSSServer(FastAPI):
         self.add_route("/feed", self.get_feed, methods=["GET"])
 
     async def get_feed(self, request) -> Response:
-        feed = self._feeder.get_feed()
+        feed = await self._feeder.get_feed()
         return Response(content=feed.rss(), media_type="application/xml")
