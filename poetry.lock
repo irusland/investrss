@@ -416,13 +416,13 @@ files = [
 
 [[package]]
 name = "tinkoff-investments"
-version = "0.2.0b66"
+version = "0.2.0b96"
 description = "Tinkoff Python SDK"
 optional = false
 python-versions = ">=3.8.1,<4.0.0"
 files = [
-    {file = "tinkoff_investments-0.2.0b66-py3-none-any.whl", hash = "sha256:46fef57de21ad9521c820950a523661f3695906fcb76ce659d6fea3ac075d164"},
-    {file = "tinkoff_investments-0.2.0b66.tar.gz", hash = "sha256:1691bad82110f5a6834f2150acf5e1a8b6af8e3d082aae06f12d4dd902b87aec"},
+    {file = "tinkoff_investments-0.2.0b96-py3-none-any.whl", hash = "sha256:acc08382be72c0e72ae9cd4a9ad4e7b5c3713edf068cedaddb7a65f7a4936c09"},
+    {file = "tinkoff_investments-0.2.0b96.tar.gz", hash = "sha256:e7e5f0e9705eabc1ed068beab918a460bc981f9da3091100cdaf8c1a21586ea8"},
 ]
 
 [package.dependencies]
@@ -468,4 +468,4 @@ standard = ["colorama (>=0.4)", "httptools (>=0.5.0)", "python-dotenv (>=0.13)",
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "5381eb335daeea9809ec0385ba51db5f8ec4d00f2f5bd0b996cb3a1c9e27c60b"
+content-hash = "203d692de1100fee40b7fc55dcf488555e9a515b581dafe0472ed31e21f84853"
