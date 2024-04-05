@@ -2,10 +2,11 @@ import asyncio
 
 from fastapi import FastAPI, Response, Query
 from starlette.requests import Request
-from starlette.responses import HTMLResponse
+from starlette.responses import HTMLResponse, FileResponse
 
 from instruments_available import MarketDataSniffer
 from rss import RSSFeeder
+from static.path import STATIC_PATH
 
 
 class RSSServer(FastAPI):
@@ -19,6 +20,7 @@ class RSSServer(FastAPI):
         self._market_data_sniffer = market_data_sniffer
         self.add_api_route("/feed", endpoint=self.get_feed, methods=["GET"])
         self.add_api_route("/html_render", endpoint=self.html_render, methods=["GET"])
+        self.add_api_route("/get_file", endpoint=self.get_file, methods=["GET"])
         self.on_event('startup')(self.on_startup)
         self.on_event('shutdown')(self.on_shutdown)
 
@@ -34,3 +36,6 @@ class RSSServer(FastAPI):
 
     async def html_render(self, raw_html: str = Query(...)) -> Response:
         return HTMLResponse(content=raw_html)
+
+    async def get_file(self, filename: str = Query(...)) -> Response:
+        return FileResponse(STATIC_PATH/filename)
