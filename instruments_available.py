@@ -298,28 +298,23 @@ class MarketDataSniffer:
                 )
                 container.share_info_statist.observe_candle_mean(candle)
 
-    def _get_brand_url(self, brand: BrandData):
+    def _get_brand_url(self, brand: BrandData, size=160):
         name, png = brand.logo_name.split('.')
-        return f'https://invest-brands.cdn-tinkoff.ru/{name}x160.{png}'
+        return f'https://invest-brands.cdn-tinkoff.ru/{name}x{size}.{png}'
 
     async def _notify_about_start(self):
-        shares_to_watch = '\n'.join(
-            # f'<li><a style="color: {container.share_info.share.brand.logo_base_color}">{container.share_info.share.name}</a> <img src="{self._get_brand_url(container.share_info.share.brand)}" alt="{container.share_info.share.brand.logo_name}">'
-            f'<pre>{container.share_info.share.name}</pre>'
-            for container in self._share_info_containers.values()
-        )
+        # f'<li><a style="color: {container.share_info.share.brand.logo_base_color}">{container.share_info.share.name}</a> <img src="{self._get_brand_url(container.share_info.share.brand)}" alt="{container.share_info.share.brand.logo_name}">'
+
         html_message = dedent(
             f'''\
                 Market data sniffer started {datetime.now()}
                 shares to watch:
             '''
-        ) + shares_to_watch + dedent(
-            f'''\
-            some shit
-            '''
         )
-        print(html_message)
         await self._telegram_notifier.send_message(html_message)
+        for container in self._share_info_containers.values():
+            message = f'<pre>{container.share_info.share.name}</pre><a href="{self._get_brand_url(container.share_info.share.brand)}">link</a>'
+            await self._telegram_notifier.send_message(message)
 
 
 if __name__ == "__main__":
