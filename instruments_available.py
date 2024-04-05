@@ -15,8 +15,10 @@ from tinkoff.invest import (
     SubscribeCandlesRequest, SubscriptionAction, CandleInstrument, SubscriptionInterval,
     SubscribeLastPriceRequest, LastPriceInstrument, Share, SubscribeTradesRequest,
     TradeInstrument, TradeDirection, Candle, Trade, AsyncClient, InstrumentIdType,
+    Brand,
 )
 from tinkoff.invest.async_services import AsyncServices
+from tinkoff.invest.schemas import BrandData
 from tinkoff.invest.utils import quotation_to_decimal, now
 
 from invest_settings import InvestSettings
@@ -153,7 +155,7 @@ class MarketDataSniffer:
             self._share_info_containers = {
                 share.uid: ShareInfoContainer(
                     share_info=ShareInfo(share=share),
-                    share_info_statist=self._share_info_statist_factory.create()
+                    share_info_statist=self._share_info_statist_factory.create(),
                 )
                 for share in share_to_watch
             }
@@ -296,9 +298,13 @@ class MarketDataSniffer:
                 )
                 container.share_info_statist.observe_candle_mean(candle)
 
+    def _get_brand_url(self, brand: BrandData):
+        name, png = brand.logo_name.split('.')
+        return f'https://invest-brands.cdn-tinkoff.ru/{name}x160.{png}'
+
     async def _notify_about_start(self):
         shares_to_watch = '\n'.join(
-            # f'<a style="color: {container.share_info.share.brand.logo_base_color}">{container.share_info.share.name} {container.share_info.share.brand.logo_name}</a>'
+            # f'<li><a style="color: {container.share_info.share.brand.logo_base_color}">{container.share_info.share.name}</a> <img src="{self._get_brand_url(container.share_info.share.brand)}" alt="{container.share_info.share.brand.logo_name}">'
             f'<pre>{container.share_info.share.name}</pre>'
             for container in self._share_info_containers.values()
         )
