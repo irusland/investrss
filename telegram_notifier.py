@@ -26,10 +26,10 @@ class TelegramNotifier:
 
     async def send_mini_app(self):
         data = {
-            "text": "Test web_app",
+            "text": "Test web_app http://192.168.31.136:8000/get_file?filename=list.html",
             'chat_id': self._settings.chat_id,
             "web_app": {
-                "url": "http://127.0.0.1:8000/get_file?filename=list.html"
+                "url": "http://192.168.31.136:8000/get_file?filename=list.html"
             }
         }
         async with self._aiohttp_session.post(
