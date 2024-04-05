@@ -1,7 +1,8 @@
 import os
 
+from dotenv import load_dotenv
 from tinkoff.invest import Client
-
+load_dotenv()
 TOKEN = os.environ["INVEST_TOKEN"]
 
 
