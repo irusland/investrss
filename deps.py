@@ -1,13 +1,13 @@
 from punq import Container, Scope
 
-from invest.marketdata import (
+from invest.marketdata.sniffer import (
     MarketDataSniffer,
 )
-from invest.marketdata import MarketDataSnifferSettings
-from invest.marketdata import ShareInfoStatistFactory
+from invest.marketdata.settings import MarketDataSnifferSettings
+from invest.marketdata.share_info.statist_factory import ShareInfoStatistFactory
 from invest.invest_settings import InvestSettings
 from invest.portfolio_informer import PortfolioInformer
-from rss import RSSFeeder, RSSFeederSettings
+from rss.rss import RSSFeeder, RSSFeederSettings
 from server import RSSServer
 from telegram.notifier import TelegramNotifier
 from telegram.notifier_settings import TelegramNotifierSettings
