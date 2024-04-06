@@ -1,5 +1,6 @@
 from punq import Container, Scope
 
+from invest.marketdata.notifier import MarketDataNotifier, MarketDataNotifierSettings
 from invest.marketdata.sniffer import (
     MarketDataSniffer,
 )
@@ -33,6 +34,12 @@ def get_container() -> Container:
     container.register(
         ShareInfoStatistFactory, ShareInfoStatistFactory, scope=Scope.singleton
     )
+    container.register(
+        MarketDataNotifierSettings,
+        instance=MarketDataNotifierSettings(),
+        scope=Scope.singleton,
+    )
+    container.register(MarketDataNotifier, MarketDataNotifier, scope=Scope.singleton)
     container.register(
         MarketDataSnifferSettings,
         instance=MarketDataSnifferSettings(),

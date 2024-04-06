@@ -25,6 +25,7 @@ from tinkoff.invest.schemas import BrandData
 from tinkoff.invest.utils import quotation_to_decimal, now
 
 from invest.invest_settings import InvestSettings
+from invest.marketdata.notifier import MarketDataNotifier
 from invest.marketdata.settings import MarketDataSnifferSettings
 from invest.marketdata.share_info.info import ShareInfo
 from invest.marketdata.share_info.container import ShareInfoContainer
@@ -45,12 +46,12 @@ class MarketDataSniffer:
         invest_settings: InvestSettings,
         market_data_sniffer_settings: MarketDataSnifferSettings,
         share_info_statist_factory: ShareInfoStatistFactory,
-        telegram_notifier: TelegramNotifier,
+        market_data_notifier: MarketDataNotifier,
     ):
         self._invest_settings = invest_settings
         self._settings = market_data_sniffer_settings
         self._share_info_statist_factory = share_info_statist_factory
-        self._telegram_notifier = telegram_notifier
+        self._market_data_notifier = market_data_notifier
 
         self._share_info_containers: dict[str, ShareInfoContainer] = {}
 
@@ -94,7 +95,9 @@ class MarketDataSniffer:
             await self._init_historic_candles(client)
             asyncio.create_task(self._run_volume_per_second_monitor())
 
-            await self._notify_about_start()
+            await self._market_data_notifier.notify_about_start(
+                share_info_containers=self._share_info_containers
+            )
 
             requests = [
                 MarketDataRequest(
@@ -177,18 +180,14 @@ class MarketDataSniffer:
                                 / last_candles_mean
                                 * 100
                             )
-                            formatted_change_percent = f"{change_percent:.2f}%"
+
                             if (
                                 abs(change_percent)
                                 > self._settings.change_percent_threshold
                             ):
-                                print(
-                                    "last change",
-                                    "📉" if change_percent < 0 else "📈",
-                                    formatted_change_percent,
-                                    share.name,
+                                await self._market_data_notifier.notify_high_change(
+                                    change_percent=change_percent, share=share
                                 )
-
                         if trade:
                             share_info_statist.observe_trade(trade)
                             if (
@@ -241,37 +240,12 @@ class MarketDataSniffer:
                 )
                 container.share_info_statist.observe_candle_mean(candle)
 
-    def _get_brand_url(self, brand: BrandData, size=160):
-        name, png = brand.logo_name.split(".")
-        return f"https://invest-brands.cdn-tinkoff.ru/{name}x{size}.{png}"
-
-    async def _notify_about_start(self):
-        # f'<li><a style="color: {container.share_info.share_info.brand.logo_base_color}">{container.share_info.share_info.name}</a> <img src="{self._get_brand_url(container.share_info.share_info.brand)}" alt="{container.share_info.share_info.brand.logo_name}">'
-
-        html_message = dedent(
-            f"""\
-                Market data sniffer started {datetime.now()}
-                shares to watch:
-            """
-        )
-        await self._telegram_notifier.send_message(html_message)
-        for container in self._share_info_containers.values():
-            message = f'<pre>{container.share_info.share.name}</pre><a href="{self._get_brand_url(container.share_info.share.brand)}">link</a>'
-            await self._telegram_notifier.send_message(message)
-
 
 if __name__ == "__main__":
     load_dotenv()
 
-    invest_settings = InvestSettings(os.environ["INVEST_TOKEN"])
-    market_data_sniffer_settings = MarketDataSnifferSettings()
-    share_info_statist_factory = ShareInfoStatistFactory(
-        market_data_sniffer_settings=market_data_sniffer_settings
-    )
-    telegram_notifier = TelegramNotifier(TelegramNotifierSettings())
-    MarketDataSniffer(
-        invest_settings=invest_settings,
-        market_data_sniffer_settings=market_data_sniffer_settings,
-        share_info_statist_factory=share_info_statist_factory,
-        telegram_notifier=telegram_notifier,
-    ).run()
+    from deps import get_container
+
+    print(get_container().__dict__)
+    sniffer = get_container().resolve(MarketDataSniffer)
+    sniffer.run()
