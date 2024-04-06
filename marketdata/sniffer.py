@@ -1,114 +1,33 @@
 import asyncio
-import dataclasses
 import os
-from collections import deque
 from datetime import timedelta, datetime
-from decimal import Decimal
-from statistics import mean
 from textwrap import dedent
 from threading import Event
 
 from dotenv import load_dotenv
-from pydantic.v1 import BaseSettings
 from tinkoff.invest import (
     InstrumentType, MarketDataRequest,
-    SubscribeCandlesRequest, SubscriptionAction, CandleInstrument, SubscriptionInterval,
-    SubscribeLastPriceRequest, LastPriceInstrument, Share, SubscribeTradesRequest,
-    TradeInstrument, TradeDirection, Candle, Trade, AsyncClient, InstrumentIdType,
-    Brand,
+    SubscribeCandlesRequest, SubscriptionAction, CandleInstrument,
+    SubscribeLastPriceRequest, LastPriceInstrument, SubscribeTradesRequest,
+    TradeInstrument, TradeDirection, Candle, AsyncClient, InstrumentIdType,
 )
 from tinkoff.invest.async_services import AsyncServices
 from tinkoff.invest.schemas import BrandData
 from tinkoff.invest.utils import quotation_to_decimal, now
 
 from invest_settings import InvestSettings
+from marketdata.settings import MarketDataSnifferSettings
+from marketdata.share_info.info import ShareInfo
+from marketdata.share_info.container import ShareInfoContainer
+from marketdata.share_info.statist_factory import ShareInfoStatistFactory
 from telegram_notifier import TelegramNotifier
+from telegram_notifier_settings import TelegramNotifierSettings
 
 trade_direction_to_symbol = {
     TradeDirection.TRADE_DIRECTION_BUY: "🟢",
     TradeDirection.TRADE_DIRECTION_SELL: "🔻",
     TradeDirection.TRADE_DIRECTION_UNSPECIFIED: "❓",
 }
-
-
-class MarketDataSnifferSettings(BaseSettings):
-    last_candles_count = 5
-    last_trades_count = 50
-    interval = SubscriptionInterval.SUBSCRIPTION_INTERVAL_ONE_MINUTE
-    change_percent_threshold = 0.5
-
-
-@dataclasses.dataclass(init=True)
-class ShareInfo:
-    share: Share
-
-
-class ShareInfoStatistFactory:
-    def __init__(self, market_data_sniffer_settings: MarketDataSnifferSettings):
-        self._settings = market_data_sniffer_settings
-
-    def create(self):
-        return ShareInfoStatist(self._settings)
-
-
-class ShareInfoStatist:
-    def __init__(self, marked_data_sniffer_settings: MarketDataSnifferSettings):
-        self._settings = marked_data_sniffer_settings
-
-        self.last_candle_means: deque[Decimal] = deque(
-            maxlen=self._settings.last_candles_count
-        )
-        self.last_candles: deque[Candle] = deque(
-            maxlen=self._settings.last_candles_count
-        )
-        self.last_trades: deque[Trade] = deque(maxlen=self._settings.last_trades_count)
-
-    def observe_candle_mean(self, candle: Candle) -> Decimal:
-        self.last_candles.append(candle)
-        candle_mean = mean(
-            map(
-                quotation_to_decimal,
-                (candle.open, candle.close, candle.high, candle.low)
-            )
-        )
-        self.last_candle_means.append(
-            candle_mean
-        )
-        return candle_mean
-
-    @property
-    def last_candles_mean(self) -> Decimal:
-        return mean(self.last_candle_means)
-
-    def observe_trade(self, trade: Trade):
-        self.last_trades.append(trade)
-
-    @property
-    def last_trades_mean_volume(self) -> float:
-        return mean([trade.quantity for trade in self.last_trades])
-
-    @property
-    def last_trades_mean_volume_per_second(self) -> float:
-        if not self.last_trades:
-            return 0
-        last_trades_in_second = {}
-        for trade in self.last_trades:
-            rounded = trade.time.replace(microsecond=0)
-            last_trades = last_trades_in_second.get(rounded, [])
-            last_trades.append(trade)
-            last_trades_in_second[rounded] = last_trades
-
-        print(last_trades_in_second)
-        return mean(
-            sum(trade.quantity for trade in trades) for trades in
-            last_trades_in_second.values()
-        )
-
-
-@dataclasses.dataclass(init=True)
-class ShareInfoContainer:
-    share_info: ShareInfo
-    share_info_statist: ShareInfoStatist
 
 
 class MarketDataSniffer:
@@ -226,7 +145,7 @@ class MarketDataSniffer:
                         if candle:
                             candle_mean = share_info_statist.observe_candle_mean(candle)
                             # print(
-                            #     'candle', share.name, candle_mean,
+                            #     'candle', share_info.name, candle_mean,
                             #     share_info.last_candles_mean
                             # )
 
@@ -303,7 +222,7 @@ class MarketDataSniffer:
         return f'https://invest-brands.cdn-tinkoff.ru/{name}x{size}.{png}'
 
     async def _notify_about_start(self):
-        # f'<li><a style="color: {container.share_info.share.brand.logo_base_color}">{container.share_info.share.name}</a> <img src="{self._get_brand_url(container.share_info.share.brand)}" alt="{container.share_info.share.brand.logo_name}">'
+        # f'<li><a style="color: {container.share_info.share_info.brand.logo_base_color}">{container.share_info.share_info.name}</a> <img src="{self._get_brand_url(container.share_info.share_info.brand)}" alt="{container.share_info.share_info.brand.logo_name}">'
 
         html_message = dedent(
             f'''\
@@ -325,8 +244,10 @@ if __name__ == "__main__":
     share_info_statist_factory = ShareInfoStatistFactory(
         market_data_sniffer_settings=market_data_sniffer_settings
     )
+    telegram_notifier=TelegramNotifier(TelegramNotifierSettings())
     MarketDataSniffer(
         invest_settings=invest_settings,
         market_data_sniffer_settings=market_data_sniffer_settings,
-        share_info_statist_factory=share_info_statist_factory
+        share_info_statist_factory=share_info_statist_factory,
+        telegram_notifier=telegram_notifier,
     ).run()

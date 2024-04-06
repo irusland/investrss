@@ -1,9 +1,10 @@
 from punq import Container, Scope
 
-from instruments_available import (
-    MarketDataSniffer, MarketDataSnifferSettings,
-    ShareInfoStatistFactory,
+from marketdata.sniffer import (
+    MarketDataSniffer,
 )
+from marketdata.settings import MarketDataSnifferSettings
+from marketdata.share_info.statist_factory import ShareInfoStatistFactory
 from invest_settings import InvestSettings
 from portfolio_informer import PortfolioInformer
 from rss import RSSFeeder, RSSFeederSettings
