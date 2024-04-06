@@ -25,12 +25,10 @@ class ShareInfoStatist:
         candle_mean = mean(
             map(
                 quotation_to_decimal,
-                (candle.open, candle.close, candle.high, candle.low)
+                (candle.open, candle.close, candle.high, candle.low),
             )
         )
-        self.last_candle_means.append(
-            candle_mean
-        )
+        self.last_candle_means.append(candle_mean)
         return candle_mean
 
     @property
@@ -57,6 +55,6 @@ class ShareInfoStatist:
 
         print(last_trades_in_second)
         return mean(
-            sum(trade.quantity for trade in trades) for trades in
-            last_trades_in_second.values()
+            sum(trade.quantity for trade in trades)
+            for trades in last_trades_in_second.values()
         )

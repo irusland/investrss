@@ -19,11 +19,14 @@ def main():
         for position in portfolio.positions:
             current_yield += position.expected_yield
 
-        yield_precent = money_to_decimal(current_yield) / money_to_decimal(current_yield + portfolio.total_amount_portfolio)
-        print(money_to_decimal(portfolio.total_amount_portfolio), money_to_decimal(current_yield), yield_precent)
-
-
-
+        yield_precent = money_to_decimal(current_yield) / money_to_decimal(
+            current_yield + portfolio.total_amount_portfolio
+        )
+        print(
+            money_to_decimal(portfolio.total_amount_portfolio),
+            money_to_decimal(current_yield),
+            yield_precent,
+        )
 
 
 if __name__ == "__main__":

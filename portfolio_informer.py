@@ -1,9 +1,7 @@
-import os
 from decimal import Decimal
-from pprint import pprint
 
 from pydantic import BaseModel
-from tinkoff.invest import Client, Quotation, AsyncClient
+from tinkoff.invest import Quotation, AsyncClient
 from tinkoff.invest.async_services import AsyncServices
 from tinkoff.invest.utils import money_to_decimal
 
@@ -36,7 +34,7 @@ class PortfolioInformer:
             return PortfolioInfo(
                 total_amount=money_to_decimal(portfolio.total_amount_portfolio),
                 current_yield=money_to_decimal(current_yield),
-                yield_percent=yield_percent
+                yield_percent=yield_percent,
             )
 
     async def _get_account_id(self, client: AsyncServices) -> str:

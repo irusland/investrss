@@ -6,4 +6,4 @@ class TelegramNotifierSettings(BaseSettings):
     chat_id: str
 
     class Config:
-        env_prefix = 'TELEGRAM_'
+        env_prefix = "TELEGRAM_"

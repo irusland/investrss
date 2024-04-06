@@ -33,14 +33,16 @@ class RSSFeeder:
         )
 
         total = Item(
-            title=self._settings.info_format.format(total_amount=total_amount,current_yield=current_yield,yield_percent=yield_percent),
+            title=self._settings.info_format.format(
+                total_amount=total_amount,
+                current_yield=current_yield,
+                yield_percent=yield_percent,
+            ),
             link="https://github.com/irusland/investrss",
             description="Some change happened in the market.",
             author="Ruslan Sirazhetdinov",
-            guid=Guid(
-                "https://github.com/irusland/investrss"
-            ),
-            pubDate=datetime.datetime.now()
+            guid=Guid("https://github.com/irusland/investrss"),
+            pubDate=datetime.datetime.now(),
         )
 
         feed = Feed(
@@ -49,7 +51,7 @@ class RSSFeeder:
             description="Live market feed",
             language="en-US",
             lastBuildDate=datetime.datetime.now(),
-            items=[total]
+            items=[total],
         )
 
         return feed

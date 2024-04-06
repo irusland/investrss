@@ -6,10 +6,19 @@ from threading import Event
 
 from dotenv import load_dotenv
 from tinkoff.invest import (
-    InstrumentType, MarketDataRequest,
-    SubscribeCandlesRequest, SubscriptionAction, CandleInstrument,
-    SubscribeLastPriceRequest, LastPriceInstrument, SubscribeTradesRequest,
-    TradeInstrument, TradeDirection, Candle, AsyncClient, InstrumentIdType,
+    InstrumentType,
+    MarketDataRequest,
+    SubscribeCandlesRequest,
+    SubscriptionAction,
+    CandleInstrument,
+    SubscribeLastPriceRequest,
+    LastPriceInstrument,
+    SubscribeTradesRequest,
+    TradeInstrument,
+    TradeDirection,
+    Candle,
+    AsyncClient,
+    InstrumentIdType,
 )
 from tinkoff.invest.async_services import AsyncServices
 from tinkoff.invest.schemas import BrandData
@@ -64,7 +73,10 @@ class MarketDataSniffer:
             s = await client.instruments.get_favorites()
             share_to_watch = []
             for i in s.favorite_instruments:
-                if i.api_trade_available_flag and i.instrument_kind == InstrumentType.INSTRUMENT_TYPE_SHARE:
+                if (
+                    i.api_trade_available_flag
+                    and i.instrument_kind == InstrumentType.INSTRUMENT_TYPE_SHARE
+                ):
                     share_response = await client.instruments.share_by(
                         id_type=InstrumentIdType.INSTRUMENT_ID_TYPE_UID,
                         id=i.uid,
@@ -93,7 +105,8 @@ class MarketDataSniffer:
                             CandleInstrument(
                                 instrument_id=share.uid,
                                 interval=self._settings.interval,
-                            ) for share in share_to_watch
+                            )
+                            for share in share_to_watch
                         ],
                     ),
                 ),
@@ -103,7 +116,8 @@ class MarketDataSniffer:
                         instruments=[
                             LastPriceInstrument(
                                 instrument_id=share.uid,
-                            ) for share in share_to_watch
+                            )
+                            for share in share_to_watch
                         ],
                     ),
                 ),
@@ -113,7 +127,8 @@ class MarketDataSniffer:
                         instruments=[
                             TradeInstrument(
                                 instrument_id=share.uid,
-                            ) for share in share_to_watch
+                            )
+                            for share in share_to_watch
                         ],
                     )
                 ),
@@ -127,17 +142,20 @@ class MarketDataSniffer:
 
             while self._is_running.is_set():
                 try:
-                    async for marketdata in client.market_data_stream.market_data_stream(
-                            request_iterator()
+                    async for (
+                        marketdata
+                    ) in client.market_data_stream.market_data_stream(
+                        request_iterator()
                     ):
                         candle = marketdata.candle
                         last_price = marketdata.last_price
                         trade = marketdata.trade
 
                         if candle or last_price or trade:
-                            response = (candle or last_price or trade)
+                            response = candle or last_price or trade
                             container = self._share_info_containers[
-                                response.instrument_uid]
+                                response.instrument_uid
+                            ]
                             share_info = container.share_info
                             share_info_statist = container.share_info_statist
                             share = container.share_info.share
@@ -151,31 +169,43 @@ class MarketDataSniffer:
 
                         if last_price:
                             last_candles_mean = share_info_statist.last_candles_mean
-                            change_percent = (quotation_to_decimal(
-                                last_price.price
-                            ) - last_candles_mean) / last_candles_mean * 100
-                            formatted_change_percent = f'{change_percent:.2f}%'
-                            if abs(
-                                    change_percent
-                            ) > self._settings.change_percent_threshold:
+                            change_percent = (
+                                (
+                                    quotation_to_decimal(last_price.price)
+                                    - last_candles_mean
+                                )
+                                / last_candles_mean
+                                * 100
+                            )
+                            formatted_change_percent = f"{change_percent:.2f}%"
+                            if (
+                                abs(change_percent)
+                                > self._settings.change_percent_threshold
+                            ):
                                 print(
-                                    'last change', '📉' if change_percent < 0 else '📈',
-                                    formatted_change_percent, share.name
+                                    "last change",
+                                    "📉" if change_percent < 0 else "📈",
+                                    formatted_change_percent,
+                                    share.name,
                                 )
 
                         if trade:
                             share_info_statist.observe_trade(trade)
-                            if trade.quantity > share_info_statist.last_trades_mean_volume:
+                            if (
+                                trade.quantity
+                                > share_info_statist.last_trades_mean_volume
+                            ):
                                 print(
-                                    'trade', trade.quantity,
+                                    "trade",
+                                    trade.quantity,
                                     trade_direction_to_symbol[trade.direction],
                                     share.name,
                                     trade.quantity,
-                                    share_info_statist.last_trades_mean_volume
+                                    share_info_statist.last_trades_mean_volume,
                                 )
 
                 except Exception as e:
-                    print('exception', e)
+                    print("exception", e)
 
     async def _run_volume_per_second_monitor(self):
         while self._is_running.is_set():
@@ -184,17 +214,11 @@ class MarketDataSniffer:
                 vps = container.share_info_statist.last_trades_mean_volume_per_second
                 if vps > 0:
                     vpss[container.share_info.share] = vps
-            for share, vps in sorted(
-                    vpss.items(), key=lambda p: p[1], reverse=True
-            ):
-                print(
-                    'volume per second', share.name, vps
-                )
+            for share, vps in sorted(vpss.items(), key=lambda p: p[1], reverse=True):
+                print("volume per second", share.name, vps)
             await asyncio.sleep(1)
 
-    async def _init_historic_candles(
-        self, client: AsyncServices
-    ):
+    async def _init_historic_candles(self, client: AsyncServices):
         for container in self._share_info_containers.values():
             response = await client.market_data.get_candles(
                 instrument_id=container.share_info.share.uid,
@@ -218,17 +242,17 @@ class MarketDataSniffer:
                 container.share_info_statist.observe_candle_mean(candle)
 
     def _get_brand_url(self, brand: BrandData, size=160):
-        name, png = brand.logo_name.split('.')
-        return f'https://invest-brands.cdn-tinkoff.ru/{name}x{size}.{png}'
+        name, png = brand.logo_name.split(".")
+        return f"https://invest-brands.cdn-tinkoff.ru/{name}x{size}.{png}"
 
     async def _notify_about_start(self):
         # f'<li><a style="color: {container.share_info.share_info.brand.logo_base_color}">{container.share_info.share_info.name}</a> <img src="{self._get_brand_url(container.share_info.share_info.brand)}" alt="{container.share_info.share_info.brand.logo_name}">'
 
         html_message = dedent(
-            f'''\
+            f"""\
                 Market data sniffer started {datetime.now()}
                 shares to watch:
-            '''
+            """
         )
         await self._telegram_notifier.send_message(html_message)
         for container in self._share_info_containers.values():
@@ -244,7 +268,7 @@ if __name__ == "__main__":
     share_info_statist_factory = ShareInfoStatistFactory(
         market_data_sniffer_settings=market_data_sniffer_settings
     )
-    telegram_notifier=TelegramNotifier(TelegramNotifierSettings())
+    telegram_notifier = TelegramNotifier(TelegramNotifierSettings())
     MarketDataSniffer(
         invest_settings=invest_settings,
         market_data_sniffer_settings=market_data_sniffer_settings,
