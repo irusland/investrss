@@ -4,7 +4,7 @@ from fastapi import FastAPI, Response, Query
 from starlette.requests import Request
 from starlette.responses import HTMLResponse, FileResponse
 
-from marketdata.sniffer import MarketDataSniffer
+from invest.marketdata import MarketDataSniffer
 from rss import RSSFeeder
 from static.path import STATIC_PATH
 

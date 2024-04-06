@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 
-from telegram_notifier_settings import TelegramNotifierSettings
+from telegram.notifier_settings import TelegramNotifierSettings
 import requests
 
 if __name__ == "__main__":

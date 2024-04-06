@@ -5,7 +5,7 @@ from statistics import mean
 from tinkoff.invest import Candle, Trade
 from tinkoff.invest.utils import quotation_to_decimal
 
-from marketdata.settings import MarketDataSnifferSettings
+from invest.marketdata.settings import MarketDataSnifferSettings
 
 
 class ShareInfoStatist:

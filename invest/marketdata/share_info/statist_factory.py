@@ -1,5 +1,5 @@
-from marketdata.settings import MarketDataSnifferSettings
-from marketdata.share_info.statist import ShareInfoStatist
+from invest.marketdata.settings import MarketDataSnifferSettings
+from invest.marketdata.share_info.statist import ShareInfoStatist
 
 
 class ShareInfoStatistFactory:

@@ -3,7 +3,7 @@ import datetime
 from pydantic.v1 import BaseSettings
 from rfeed import *
 
-from portfolio_informer import PortfolioInformer
+from invest.portfolio_informer import PortfolioInformer
 
 
 class RSSFeederSettings(BaseSettings):

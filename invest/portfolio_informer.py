@@ -5,7 +5,7 @@ from tinkoff.invest import Quotation, AsyncClient
 from tinkoff.invest.async_services import AsyncServices
 from tinkoff.invest.utils import money_to_decimal
 
-from invest_settings import InvestSettings
+from invest.invest_settings import InvestSettings
 
 
 class PortfolioInfo(BaseModel):

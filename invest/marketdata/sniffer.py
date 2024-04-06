@@ -24,13 +24,13 @@ from tinkoff.invest.async_services import AsyncServices
 from tinkoff.invest.schemas import BrandData
 from tinkoff.invest.utils import quotation_to_decimal, now
 
-from invest_settings import InvestSettings
-from marketdata.settings import MarketDataSnifferSettings
-from marketdata.share_info.info import ShareInfo
-from marketdata.share_info.container import ShareInfoContainer
-from marketdata.share_info.statist_factory import ShareInfoStatistFactory
-from telegram_notifier import TelegramNotifier
-from telegram_notifier_settings import TelegramNotifierSettings
+from invest.invest_settings import InvestSettings
+from invest.marketdata.settings import MarketDataSnifferSettings
+from invest.marketdata.share_info.info import ShareInfo
+from invest.marketdata.share_info.container import ShareInfoContainer
+from invest.marketdata.share_info.statist_factory import ShareInfoStatistFactory
+from telegram.notifier import TelegramNotifier
+from telegram.notifier_settings import TelegramNotifierSettings
 
 trade_direction_to_symbol = {
     TradeDirection.TRADE_DIRECTION_BUY: "🟢",

@@ -3,7 +3,7 @@ import asyncio
 import aiohttp
 from dotenv import load_dotenv
 
-from telegram_notifier_settings import TelegramNotifierSettings
+from notifier_settings import TelegramNotifierSettings
 
 
 class TelegramNotifier:
