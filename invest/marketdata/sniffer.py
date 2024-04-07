@@ -1,7 +1,5 @@
 import asyncio
-import os
-from datetime import timedelta, datetime
-from textwrap import dedent
+from datetime import timedelta
 from threading import Event
 
 from dotenv import load_dotenv
@@ -21,17 +19,14 @@ from tinkoff.invest import (
     InstrumentIdType,
 )
 from tinkoff.invest.async_services import AsyncServices
-from tinkoff.invest.schemas import BrandData
 from tinkoff.invest.utils import quotation_to_decimal, now
 
 from invest.invest_settings import InvestSettings
 from invest.marketdata.notifier import MarketDataNotifier
 from invest.marketdata.settings import MarketDataSnifferSettings
-from invest.marketdata.share_info.info import ShareInfo
 from invest.marketdata.share_info.container import ShareInfoContainer
+from invest.marketdata.share_info.info import ShareInfo
 from invest.marketdata.share_info.statist_factory import ShareInfoStatistFactory
-from telegram.notifier import TelegramNotifier
-from telegram.notifier_settings import TelegramNotifierSettings
 
 trade_direction_to_symbol = {
     TradeDirection.TRADE_DIRECTION_BUY: "🟢",
