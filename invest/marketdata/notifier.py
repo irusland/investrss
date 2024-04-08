@@ -1,4 +1,5 @@
 import socket
+import traceback
 from datetime import datetime
 from textwrap import dedent
 
@@ -48,11 +49,32 @@ class MarketDataNotifier:
     async def notify_high_change(self, change_percent: float, share: Share):
         formatted_change_percent = f"{change_percent:.2f}%"
         await self._telegram_notifier.send_message(
-            dedent(f"""\
+            dedent(
+                f"""\
                 {"📉" if change_percent < 0 else "📈"} {formatted_change_percent} <pre>{share.name}</pre>
-                """)
+                """
+            )
         )
 
     def _get_brand_url(self, brand: BrandData, size=160):
         name, png = brand.logo_name.split(".")
         return f"https://invest-brands.cdn-tinkoff.ru/{name}x{size}.{png}"
+
+    async def notify_error(self, e):
+        try:
+            error = ''.join(traceback.format_exception(type(e), e, e.__traceback__))
+            await self._telegram_notifier.send_message(
+                dedent(
+                    f"""\
+                Error occurred:
+                ```python
+                """
+                ) + error + dedent(
+                    """\
+                    ```
+                    """
+                ),
+                parse_mode='MarkdownV2'
+            )
+        except Exception as e:
+            print('Cannot notify about error', e)

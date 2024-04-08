@@ -175,7 +175,6 @@ class MarketDataSniffer:
                                 / last_candles_mean
                                 * 100
                             )
-
                             if (
                                 abs(change_percent)
                                 > self._settings.change_percent_threshold
@@ -187,7 +186,7 @@ class MarketDataSniffer:
                             share_info_statist.observe_trade(trade)
                             if (
                                 trade.quantity
-                                > share_info_statist.last_trades_mean_volume
+                                > share_info_statist.last_trades_mean_volume_per_second
                             ):
                                 print(
                                     "trade",
@@ -200,6 +199,8 @@ class MarketDataSniffer:
 
                 except Exception as e:
                     print("exception", e)
+                    await self._market_data_notifier.notify_error(e)
+                    await asyncio.sleep(self._settings.on_error_sleep.total_seconds())
 
     async def _run_volume_per_second_monitor(self):
         while self._is_running.is_set():

@@ -53,7 +53,6 @@ class ShareInfoStatist:
             last_trades.append(trade)
             last_trades_in_second[rounded] = last_trades
 
-        print(last_trades_in_second)
         return mean(
             sum(trade.quantity for trade in trades)
             for trades in last_trades_in_second.values()
