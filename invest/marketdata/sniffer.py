@@ -56,19 +56,20 @@ class MarketDataSniffer:
         self._is_running.clear()
 
     async def run(self):
+        self._is_running.set()
         try:
-            await self._run()
-        except Exception as e:
-            print("exception", e)
-            await self._market_data_notifier.notify_error(e)
-            await asyncio.sleep(self._settings.on_error_sleep.total_seconds())
+            while self._is_running.is_set():
+                try:
+                    await self._run()
+                except Exception as e:
+                    print("exception", e)
+                    await self._market_data_notifier.notify_error(e)
+                    await asyncio.sleep(self._settings.on_error_sleep.total_seconds())
         except BaseException as e:
             self.stop()
             raise e
 
     async def _run(self):
-        self._is_running.set()
-
         async with AsyncClient(self._invest_settings.token) as client:
             s = await client.instruments.get_favorites()
             share_to_watch = []
