@@ -62,19 +62,21 @@ class MarketDataNotifier:
 
     async def notify_error(self, e):
         try:
-            error = ''.join(traceback.format_exception(type(e), e, e.__traceback__))
+            error = "".join(traceback.format_exception(type(e), e, e.__traceback__))
             await self._telegram_notifier.send_message(
                 dedent(
                     f"""\
                 Error occurred:
                 ```python
                 """
-                ) + error + dedent(
+                )
+                + error
+                + dedent(
                     """\
                     ```
                     """
                 ),
-                parse_mode='MarkdownV2'
+                parse_mode="MarkdownV2",
             )
         except Exception as e:
-            print('Cannot notify about error', e)
+            print("Cannot notify about error", e)

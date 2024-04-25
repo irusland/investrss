@@ -58,6 +58,10 @@ class MarketDataSniffer:
     async def run(self):
         try:
             await self._run()
+        except Exception as e:
+            print("exception", e)
+            await self._market_data_notifier.notify_error(e)
+            await asyncio.sleep(self._settings.on_error_sleep.total_seconds())
         except BaseException as e:
             self.stop()
             raise e
@@ -139,68 +143,56 @@ class MarketDataSniffer:
                     await asyncio.sleep(1)
 
             while self._is_running.is_set():
-                try:
-                    async for (
-                        marketdata
-                    ) in client.market_data_stream.market_data_stream(
-                        request_iterator()
-                    ):
-                        candle = marketdata.candle
-                        last_price = marketdata.last_price
-                        trade = marketdata.trade
+                async for marketdata in client.market_data_stream.market_data_stream(
+                    request_iterator()
+                ):
+                    candle = marketdata.candle
+                    last_price = marketdata.last_price
+                    trade = marketdata.trade
 
-                        if candle or last_price or trade:
-                            response = candle or last_price or trade
-                            container = self._share_info_containers[
-                                response.instrument_uid
-                            ]
-                            share_info = container.share_info
-                            share_info_statist = container.share_info_statist
-                            share = container.share_info.share
+                    if candle or last_price or trade:
+                        response = candle or last_price or trade
+                        container = self._share_info_containers[response.instrument_uid]
+                        share_info = container.share_info
+                        share_info_statist = container.share_info_statist
+                        share = container.share_info.share
 
-                        if candle:
-                            candle_mean = share_info_statist.observe_candle_mean(candle)
-                            # print(
-                            #     'candle', share_info.name, candle_mean,
-                            #     share_info.last_candles_mean
-                            # )
+                    if candle:
+                        candle_mean = share_info_statist.observe_candle_mean(candle)
+                        # print(
+                        #     'candle', share_info.name, candle_mean,
+                        #     share_info.last_candles_mean
+                        # )
 
-                        if last_price:
-                            last_candles_mean = share_info_statist.last_candles_mean
-                            change_percent = (
-                                (
-                                    quotation_to_decimal(last_price.price)
-                                    - last_candles_mean
-                                )
-                                / last_candles_mean
-                                * 100
+                    if last_price:
+                        last_candles_mean = share_info_statist.last_candles_mean
+                        change_percent = (
+                            (quotation_to_decimal(last_price.price) - last_candles_mean)
+                            / last_candles_mean
+                            * 100
+                        )
+                        if (
+                            abs(change_percent)
+                            > self._settings.change_percent_threshold
+                        ):
+                            await self._market_data_notifier.notify_high_change(
+                                change_percent=change_percent, share=share
                             )
-                            if (
-                                abs(change_percent)
-                                > self._settings.change_percent_threshold
-                            ):
-                                await self._market_data_notifier.notify_high_change(
-                                    change_percent=change_percent, share=share
-                                )
-                        if trade:
-                            share_info_statist.observe_trade(trade)
-                            if (
-                                trade.quantity
-                                > share_info_statist.last_trades_mean_volume_per_second
-                            ):
-                                print(
-                                    "trade",
-                                    trade.quantity,
-                                    trade_direction_to_symbol[trade.direction],
-                                    share.name,
-                                    trade.quantity,
-                                    share_info_statist.last_trades_mean_volume,
-                                )
-
-                except Exception as e:
-                    print("exception", e)
-                    await self._market_data_notifier.notify_error(e)
-                    await asyncio.sleep(self._settings.on_error_sleep.total_seconds())
+                    if trade:
+                        share_info_statist.observe_trade(trade)
+                        if (
+                            quotation_to_decimal(trade.price) * trade.quantity
+                            > share_info_statist.last_trades_mean_volume_per_second
+                        ):
+                            # print(
+                            #     "trade",
+                            #     trade.quantity,
+                            #     trade_direction_to_symbol[trade.direction],
+                            #     share.name,
+                            #     trade.quantity,
+                            #     share_info_statist.last_trades_mean_volume,
+                            # )
+                            pass
 
     async def _run_volume_per_second_monitor(self):
         while self._is_running.is_set():
@@ -209,8 +201,8 @@ class MarketDataSniffer:
                 vps = container.share_info_statist.last_trades_mean_volume_per_second
                 if vps > 0:
                     vpss[container.share_info.share] = vps
-            for share, vps in sorted(vpss.items(), key=lambda p: p[1], reverse=True):
-                print("volume per second", share.name, vps)
+            # for share, vps in sorted(vpss.items(), key=lambda p: p[0].name, reverse=True):
+            #     print("volume per second", share.name, vps)
             await asyncio.sleep(1)
 
     async def _init_historic_candles(self, client: AsyncServices):

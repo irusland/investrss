@@ -3,7 +3,7 @@ from collections import deque
 from statistics import mean
 
 from tinkoff.invest import Candle, Trade
-from tinkoff.invest.utils import quotation_to_decimal
+from tinkoff.invest.utils import quotation_to_decimal, now
 
 from invest.marketdata.settings import MarketDataSnifferSettings
 
@@ -47,13 +47,19 @@ class ShareInfoStatist:
         if not self.last_trades:
             return 0
         last_trades_in_second = {}
+        scrape_time = now() - self._settings.last_trades_scrape_span
         for trade in self.last_trades:
+            if trade.time < scrape_time:
+                continue
             rounded = trade.time.replace(microsecond=0)
             last_trades = last_trades_in_second.get(rounded, [])
             last_trades.append(trade)
             last_trades_in_second[rounded] = last_trades
 
-        return mean(
-            sum(trade.quantity for trade in trades)
+        volumes = list(
+            sum(quotation_to_decimal(trade.price) * trade.quantity for trade in trades)
             for trades in last_trades_in_second.values()
         )
+        if not volumes:
+            return 0
+        return mean(volumes)
