@@ -67,6 +67,7 @@ class MarketDataSniffer:
                     await asyncio.sleep(self._settings.on_error_sleep.total_seconds())
         except BaseException as e:
             self.stop()
+            await self._market_data_notifier.notify_error(e)
             raise e
 
     async def _run(self):
