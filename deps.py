@@ -10,8 +10,8 @@ from invest.invest_settings import InvestSettings
 from invest.portfolio_informer import PortfolioInformer
 from rss.rss import RSSFeeder, RSSFeederSettings
 from server import RSSServer
-from telegram.notifier import TelegramNotifier
-from telegram.notifier_settings import TelegramNotifierSettings
+from telegram_notifier.notifier import TelegramNotifier
+from telegram_notifier.notifier_settings import TelegramNotifierSettings
 
 
 def get_container() -> Container:
