@@ -8,7 +8,7 @@ from tinkoff.invest import Share
 from tinkoff.invest.schemas import BrandData
 
 from invest.marketdata.share_info.container import ShareInfoContainer
-from telegram.notifier import TelegramNotifier
+from telegram_notifier.notifier import TelegramNotifier
 
 
 class MarketDataNotifierSettings(BaseSettings):
