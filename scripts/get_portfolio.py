@@ -1,14 +1,16 @@
-import os
 from pprint import pprint
 
+from dotenv import load_dotenv
 from tinkoff.invest import Client, Quotation
 from tinkoff.invest.utils import money_to_decimal
 
-TOKEN = os.environ["INVEST_TOKEN"]
+from invest.invest_settings import InvestSettings
 
 
 def main():
-    with Client(TOKEN) as client:
+    settings = InvestSettings()
+
+    with Client(settings.token) as client:
         accounts_response = client.users.get_accounts()
         account = accounts_response.accounts[0]
         main_account = account.id
@@ -30,4 +32,5 @@ def main():
 
 
 if __name__ == "__main__":
+    load_dotenv()
     main()
