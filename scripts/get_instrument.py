@@ -10,9 +10,11 @@ def main():
     settings = InvestSettings()
 
     with Client(settings.token) as client:
-        r = client.instruments.find_instrument(query="DELI")
-        for i in r.instruments:
-            print(i)
+        ticker = "DELI"
+        r = client.instruments.find_instrument(query=ticker)
+        for instrument in r.instruments:
+            if instrument.api_trade_available_flag and instrument.ticker == ticker:
+                print(instrument)
 
 
 if __name__ == "__main__":
