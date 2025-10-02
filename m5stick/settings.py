@@ -5,8 +5,8 @@ class OpenAISettings(BaseSettings):
     api_key: str
     whisper_model: str = "whisper-1"
     chat_model: str = "gpt-4o-mini"
-    tts_model: str = "tts-1"
-    tts_voice: str = "alloy"
+    tts_model: str = "gpt-4o-mini-tts"
+    tts_voice: str = "shimmer"
     response_format: str = "wav"
     max_tokens: int = 500
     temperature: float = 0.7
