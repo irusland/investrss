@@ -1,6 +1,7 @@
 import os, sys, io, time, struct
 import M5
 from M5 import *
+
 try:
     import urequests as requests
 except:
@@ -9,9 +10,9 @@ except:
 label0 = None
 
 # ===== CONFIG =====
-UPLOAD_URL   = "http://192.168.1.121:8000/audio"   # POST сюда отправляем наш WAV
-AUTH_TOKEN   = None                                 # "Bearer abc123" или None
-REPLY_PATH   = "/flash/reply.wav"                   # сюда сохраним WAV из ответа
+UPLOAD_URL = "http://192.168.1.121:8000/audio"  # POST сюда отправляем наш WAV
+AUTH_TOKEN = None  # "Bearer abc123" или None
+REPLY_PATH = "/flash/reply.wav"  # сюда сохраним WAV из ответа
 
 # ===== RECORDING =====
 SR = 16000
@@ -25,6 +26,7 @@ pcm_buf = None
 _current_chunk = None
 _waiting_chunk = False
 
+
 def _wav_wrap(pcm_bytes, sr=SR, bits=BITS, ch=1):
     """Собираем минимальный PCM WAV."""
     if bits == 8:
@@ -33,10 +35,10 @@ def _wav_wrap(pcm_bytes, sr=SR, bits=BITS, ch=1):
     byte_rate = sr * ch * (bits // 8)
     block_align = ch * (bits // 8)
     header = b"RIFF" + struct.pack("<I", 36 + data_size) + b"WAVE"
-    fmt = (b"fmt " + struct.pack("<IHHIIHH",
-                                 16, 1, ch, sr, byte_rate, block_align, bits))
+    fmt = b"fmt " + struct.pack("<IHHIIHH", 16, 1, ch, sr, byte_rate, block_align, bits)
     data_hdr = b"data" + struct.pack("<I", data_size)
     return header + fmt + data_hdr + pcm_bytes
+
 
 def _post_wav_and_save_reply(wav_bytes, reply_path, chunk_size=4096):
     """
@@ -87,11 +89,13 @@ def _post_wav_and_save_reply(wav_bytes, reply_path, chunk_size=4096):
         except:
             pass
 
+
 def _start_next_chunk():
     global _current_chunk, _waiting_chunk
     _current_chunk = bytearray(CHUNK_SAMPLES * BYTES_PER_SAMPLE)
     Mic.record(_current_chunk, SR, False)  # неблокирующе
     _waiting_chunk = True
+
 
 def _poll_chunk_and_append():
     global _current_chunk, _waiting_chunk, pcm_buf
@@ -100,13 +104,22 @@ def _poll_chunk_and_append():
         _current_chunk = None
         _waiting_chunk = False
 
+
 def setup():
     global label0
     M5.begin()
     Widgets.setRotation(1)
     Widgets.fillScreen(0x222222)
-    label0 = Widgets.Label("Hold A: REC -> POST -> REPLY", 8, 58, 1.0,
-                           0xffffff, 0x222222, Widgets.FONTS.DejaVu18)
+    label0 = Widgets.Label(
+        "Hold A: REC -> POST -> REPLY",
+        8,
+        58,
+        1.0,
+        0xFFFFFF,
+        0x222222,
+        Widgets.FONTS.DejaVu18,
+    )
+
 
 def loop():
     global recording, pcm_buf
@@ -174,7 +187,8 @@ def loop():
 
     time.sleep_ms(5)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     try:
         setup()
         while True:

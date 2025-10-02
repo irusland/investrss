@@ -8,6 +8,7 @@ from invest.marketdata.settings import MarketDataSnifferSettings
 from invest.marketdata.share_info.statist_factory import ShareInfoStatistFactory
 from invest.invest_settings import InvestSettings
 from invest.portfolio_informer import PortfolioInformer
+from m5stick.settings import OpenAISettings, AudioSettings
 from rss.rss import RSSFeeder, RSSFeederSettings
 from server import RSSServer
 from telegram_notifier.notifier import TelegramNotifier
@@ -30,6 +31,9 @@ def get_container() -> Container:
         scope=Scope.singleton,
     )
     container.register(TelegramNotifier, TelegramNotifier, scope=Scope.singleton)
+
+    container.register(OpenAISettings, instance=OpenAISettings(), scope=Scope.singleton)
+    container.register(AudioSettings, instance=AudioSettings(), scope=Scope.singleton)
 
     container.register(
         ShareInfoStatistFactory, ShareInfoStatistFactory, scope=Scope.singleton
