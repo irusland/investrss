@@ -117,6 +117,7 @@ class RSSServer(FastAPI):
                     tts_response = openai.audio.speech.create(
                         model=self._openai_settings.tts_model,
                         voice=self._openai_settings.tts_voice,
+                        instructions=self._openai_settings.tts_instructions,
                         input=chat_response_text,
                         response_format=self._openai_settings.response_format,
                     )
