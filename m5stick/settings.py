@@ -7,7 +7,7 @@ class OpenAISettings(BaseSettings):
     whisper_model: str = "whisper-1"
     chat_model: str = "gpt-4o-mini"
     tts_model: str = "gpt-4o-mini-tts"
-    tts_instructions: str | NotGiven = 'Говори женственным голосом, размеренно и чётко.'
+    tts_instructions: str | NotGiven = 'Говори очень уверенным голосом, как профессиональный диктор.'
     tts_voice: str = "shimmer"
     response_format: str = "wav"
     max_tokens: int = 500
